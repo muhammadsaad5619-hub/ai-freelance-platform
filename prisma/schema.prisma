@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ──────────────────────────────────────────────────────────────────────
+
+enum Role {
+  CLIENT
+  FREELANCER
+}
+
+enum ProjectStatus {
+  DRAFT
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ProposalStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum PaymentStatus {
+  PENDING
+  HELD
+  RELEASED
+  REFUNDED
+}
+
+enum MessageType {
+  TEXT
+  FILE
+  SYSTEM
+}
+
+// ─── Models ─────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(CLIENT)
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile       Profile?
+  projects      Project[]    @relation("ClientProjects")
+  proposals     Proposal[]
+  sentMessages  Message[]    @relation("SentMessages")
+  payments      Payment[]
+  aiHistories   AIHistory[]
+
+  @@map("users")
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  bio         String?
+  title       String?
+  skills      String[] @default([])
+  hourlyRate  Float?
+  portfolio   String?
+  location    String?
+  website     String?
+  linkedin    String?
+  github      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  budget      Float?
+  deadline    DateTime?
+  status      ProjectStatus @default(DRAFT)
+  skills      String[]      @default([])
+  clientId    String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  client    User       @relation("ClientProjects", fields: [clientId], references: [id], onDelete: Cascade)
+  proposals Proposal[]
+  messages  Message[]
+  payments  Payment[]
+
+  @@map("projects")
+}
+
+model Proposal {
+  id           String         @id @default(cuid())
+  projectId    String
+  freelancerId String
+  coverLetter  String
+  bidAmount    Float
+  deliveryDays Int
+  status       ProposalStatus @default(PENDING)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  freelancer User    @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, freelancerId])
+  @@map("proposals")
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  content   String
+  type      MessageType @default(TEXT)
+  projectId String
+  senderId  String
+  read      Boolean     @default(false)
+  createdAt DateTime    @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sender  User    @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  amount        Float
+  status        PaymentStatus @default(PENDING)
+  projectId     String
+  userId        String
+  transactionId String?       @unique
+  description   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model AIHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  prompt    String
+  response  String
+  model     String   @default("gpt-4")
+  tokens    Int?
+  context   String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_histories")
+}
