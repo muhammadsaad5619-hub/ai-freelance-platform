@@ -1,5 +1,4 @@
 import {
-  Zap,
   Brain,
   Shield,
   Globe,
@@ -10,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatsSection } from "@/components/ui/stats-section";
-import Link from "next/link";
 import Image from "next/image";
 
 const features = [
@@ -133,7 +131,7 @@ export default function Home() {
 
           {/* Feature Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, index) => (
+            {features.map((feature) => (
               <Card
                 key={feature.title}
                 className="group hover:border-white/20 transition-all duration-300 hover:-translate-y-1"

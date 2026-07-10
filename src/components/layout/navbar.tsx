@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
-  Zap,
   Menu,
   X,
   Briefcase,
@@ -74,11 +74,20 @@ export function Navbar() {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-3">
-              <Button variant="ghost" size="sm">
-                <User className="w-4 h-4 mr-2" />
-                Sign In
-              </Button>
-              <Button size="sm">Get Started</Button>
+              <SignedOut>
+                <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+                  <Button variant="ghost" size="sm">
+                    <User className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Button>
+                </SignInButton>
+                <SignUpButton mode="modal" forceRedirectUrl="/dashboard">
+                  <Button size="sm">Get Started</Button>
+                </SignUpButton>
+              </SignedOut>
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -135,11 +144,22 @@ export function Navbar() {
               </Link>
             ))}
             <div className="pt-3 border-t border-white/10 mt-3 space-y-2">
-              <Button variant="outline" className="w-full justify-center">
-                <User className="w-4 h-4 mr-2" />
-                Sign In
-              </Button>
-              <Button className="w-full justify-center">Get Started</Button>
+              <SignedOut>
+                <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+                  <Button variant="outline" className="w-full justify-center">
+                    <User className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Button>
+                </SignInButton>
+                <SignUpButton mode="modal" forceRedirectUrl="/dashboard">
+                  <Button className="w-full justify-center">Get Started</Button>
+                </SignUpButton>
+              </SignedOut>
+              <SignedIn>
+                <div className="flex justify-center py-2">
+                  <UserButton />
+                </div>
+              </SignedIn>
             </div>
           </div>
         </div>
