@@ -75,7 +75,7 @@ export function Navbar() {
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-3">
               <SignedOut>
-                <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+                <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
                   <Button variant="ghost" size="sm">
                     <User className="w-4 h-4 mr-2" />
                     Sign In
@@ -145,7 +145,7 @@ export function Navbar() {
             ))}
             <div className="pt-3 border-t border-white/10 mt-3 space-y-2">
               <SignedOut>
-                <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+                <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
                   <Button variant="outline" className="w-full justify-center">
                     <User className="w-4 h-4 mr-2" />
                     Sign In

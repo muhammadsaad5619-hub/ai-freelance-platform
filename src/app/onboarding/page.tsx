@@ -12,10 +12,10 @@ const prisma = globalForPrisma.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 export default async function OnboardingPage() {
-  const { userId } = auth();
+  const { userId } = await auth();
   
   if (!userId) {
-    redirect("/sign-in");
+    redirect("/");
   }
 
   // Check if user already exists in the database
@@ -39,7 +39,10 @@ export default async function OnboardingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={completeOnboarding} className="space-y-6 mt-4">
+          <form action={async (formData: FormData) => {
+              "use server";
+              await completeOnboarding(formData);
+            }} className="space-y-6 mt-4">
             <div className="grid sm:grid-cols-2 gap-4">
               {/* Client Option */}
               <label className="relative cursor-pointer">
@@ -48,7 +51,7 @@ export default async function OnboardingPage() {
                   <div className="mx-auto w-12 h-12 rounded-full bg-violet-500/20 flex items-center justify-center mb-4">
                     <User className="w-6 h-6 text-violet-400" />
                   </div>
-                  <h3 className="font-semibold text-white mb-2">I'm a Client</h3>
+                  <h3 className="font-semibold text-white mb-2">I&apos;m a Client</h3>
                   <p className="text-sm text-gray-400">
                     I want to hire talent and manage projects
                   </p>
@@ -62,7 +65,7 @@ export default async function OnboardingPage() {
                   <div className="mx-auto w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4">
                     <Briefcase className="w-6 h-6 text-emerald-400" />
                   </div>
-                  <h3 className="font-semibold text-white mb-2">I'm a Freelancer</h3>
+                  <h3 className="font-semibold text-white mb-2">I&apos;m a Freelancer</h3>
                   <p className="text-sm text-gray-400">
                     I want to find work and submit proposals
                   </p>

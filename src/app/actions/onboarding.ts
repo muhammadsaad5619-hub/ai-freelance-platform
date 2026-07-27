@@ -11,7 +11,7 @@ const prisma = globalForPrisma.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 export async function completeOnboarding(formData: FormData) {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) return { error: "Not logged in" };
 
   const role = formData.get("role") as string;
@@ -41,8 +41,8 @@ export async function completeOnboarding(formData: FormData) {
       });
     }
 
-    // Set a cookie so the middleware knows this user has completed onboarding
-    cookies().set("onboarded", "true", { maxAge: 60 * 60 * 24 * 365 });
+    // Store the userId in the cookie so the middleware can validate it per-user
+    cookies().set("onboarded", userId, { maxAge: 60 * 60 * 24 * 365 });
 
   } catch (error) {
     console.error("Onboarding error:", error);
@@ -53,6 +53,8 @@ export async function completeOnboarding(formData: FormData) {
 }
 
 export async function syncOnboardingCookie() {
-  cookies().set("onboarded", "true", { maxAge: 60 * 60 * 24 * 365 });
+  const { userId } = await auth();
+  if (!userId) return;
+  cookies().set("onboarded", userId, { maxAge: 60 * 60 * 24 * 365 });
   redirect("/dashboard");
 }
