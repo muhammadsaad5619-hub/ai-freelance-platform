@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { SubmitProposalSection } from "./SubmitProposalSection";
+import { ClientProposalsList } from "./ClientProposalsList";
 import {
   ArrowLeft,
   DollarSign,
@@ -101,6 +102,14 @@ export default async function ProjectDetailPage({
         select: {
           proposals: true,
         },
+      },
+      proposals: {
+        include: {
+          freelancer: {
+            select: { name: true, avatar: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
       },
     },
   });
@@ -247,6 +256,15 @@ export default async function ProjectDetailPage({
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {/* Proposals List (Clients only) */}
+          {isOwner && (
+            <ClientProposalsList
+              projectId={project.id}
+              proposals={project.proposals}
+              projectStatus={project.status}
+            />
           )}
         </div>
 

@@ -157,3 +157,92 @@ export async function submitProposal(formData: FormData) {
   revalidatePath("/find-work");
   return { success: true };
 }
+
+export async function acceptProposal(proposalId: string, projectId: string) {
+  const { userId } = await auth();
+  if (!userId) return { error: "Not logged in." };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { id: true },
+  });
+
+  if (!dbUser) return { error: "User not found." };
+
+  // Verify the project belongs to the user and is OPEN
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: { clientId: true, status: true },
+  });
+
+  if (!project) return { error: "Project not found." };
+  if (project.clientId !== dbUser.id) return { error: "Unauthorized." };
+  if (project.status !== "OPEN") return { error: "Project is not open." };
+
+  try {
+    // Run in a transaction:
+    // 1. Mark proposal as ACCEPTED
+    // 2. Mark project as IN_PROGRESS
+    // 3. Mark all other PENDING proposals for this project as REJECTED
+    await prisma.$transaction([
+      prisma.proposal.update({
+        where: { id: proposalId },
+        data: { status: "ACCEPTED" },
+      }),
+      prisma.project.update({
+        where: { id: projectId },
+        data: { status: "IN_PROGRESS" },
+      }),
+      prisma.proposal.updateMany({
+        where: {
+          projectId: projectId,
+          status: "PENDING",
+          id: { not: proposalId },
+        },
+        data: { status: "REJECTED" },
+      }),
+    ]);
+  } catch (error) {
+    console.error("Accept proposal error:", error);
+    return { error: "Failed to accept proposal." };
+  }
+
+  revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/projects");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function rejectProposal(proposalId: string, projectId: string) {
+  const { userId } = await auth();
+  if (!userId) return { error: "Not logged in." };
+
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { id: true },
+  });
+
+  if (!dbUser) return { error: "User not found." };
+
+  // Verify the project belongs to the user
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: { clientId: true },
+  });
+
+  if (!project) return { error: "Project not found." };
+  if (project.clientId !== dbUser.id) return { error: "Unauthorized." };
+
+  try {
+    await prisma.proposal.update({
+      where: { id: proposalId },
+      data: { status: "REJECTED" },
+    });
+  } catch (error) {
+    console.error("Reject proposal error:", error);
+    return { error: "Failed to reject proposal." };
+  }
+
+  revalidatePath(`/projects/${projectId}`);
+  return { success: true };
+}
