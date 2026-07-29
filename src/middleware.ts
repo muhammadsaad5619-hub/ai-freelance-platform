@@ -20,6 +20,14 @@ export default clerkMiddleware(async (auth, req) => {
     return (await auth()).redirectToSignIn({ returnBackUrl: req.url });
   }
 
+  // If signed-in user visits /sign-in or /sign-up, redirect them away
+  if (userId && isAuthRoute(req)) {
+    const onboardedUserId = req.cookies.get('onboarded')?.value;
+    const isOnboarded = onboardedUserId === userId;
+    const destination = isOnboarded ? '/dashboard' : '/onboarding';
+    return NextResponse.redirect(new URL(destination, req.url));
+  }
+
   // If signed in and NOT on the onboarding/auth page, verify THIS user has onboarded
   if (userId && !isOnboardingRoute(req) && !isAuthRoute(req)) {
     // Cookie stores the userId of the onboarded user — must match current user

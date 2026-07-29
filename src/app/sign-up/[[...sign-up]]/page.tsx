@@ -15,8 +15,7 @@ export default function SignUpPage() {
           </p>
         </div>
         <SignUp
-          routing="hash"
-          afterSignUpUrl="/dashboard"
+          forceRedirectUrl="/dashboard"
           appearance={{
             elements: {
               rootBox: "w-full",

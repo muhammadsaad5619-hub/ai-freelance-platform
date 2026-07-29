@@ -349,6 +349,9 @@ export default async function ProjectDetailPage({
               projectId={project.id}
               alreadySubmitted={hasSubmittedProposal}
               projectBudget={project.budget}
+              projectTitle={project.title}
+              projectDescription={project.description}
+              projectSkills={project.skills}
             />
           )}
         </div>

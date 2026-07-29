@@ -66,7 +66,7 @@ export default async function DashboardPage() {
   const quickActions = isFreelancer
     ? [
         { label: "Find Work", href: "/find-work", icon: Search, desc: "Browse available projects", color: "from-violet-500 to-indigo-600" },
-        { label: "My Proposals", href: "/projects", icon: FileText, desc: "Track your proposals", color: "from-emerald-500 to-teal-600" },
+        { label: "My Proposals", href: "/my-proposals", icon: FileText, desc: "Track your proposals", color: "from-emerald-500 to-teal-600" },
         { label: "Messages", href: "/messages", icon: MessageSquare, desc: "View conversations", color: "from-blue-500 to-cyan-600" },
       ]
     : [

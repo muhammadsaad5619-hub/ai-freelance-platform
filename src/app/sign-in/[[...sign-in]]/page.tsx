@@ -10,8 +10,7 @@ export default function SignInPage() {
           <p className="text-gray-400">Sign in to your FreelanceAI account</p>
         </div>
         <SignIn
-          routing="hash"
-          afterSignInUrl="/dashboard"
+          forceRedirectUrl="/dashboard"
           appearance={{
             elements: {
               rootBox: "w-full",

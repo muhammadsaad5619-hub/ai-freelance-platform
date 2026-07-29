@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { submitProposal } from "@/app/actions/projects";
+import { generateProposal } from "@/app/actions/ai";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -14,24 +15,36 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  Sparkles,
 } from "lucide-react";
 
 interface SubmitProposalSectionProps {
   projectId: string;
   alreadySubmitted: boolean;
   projectBudget: number | null;
+  projectTitle: string;
+  projectDescription: string;
+  projectSkills: string[];
 }
 
 export function SubmitProposalSection({
   projectId,
   alreadySubmitted,
   projectBudget,
+  projectTitle,
+  projectDescription,
+  projectSkills,
 }: SubmitProposalSectionProps) {
   const [showForm, setShowForm] = useState(false);
   const [submitted, setSubmitted] = useState(alreadySubmitted);
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [error, setError] = useState("");
+  const [aiSuccess, setAiSuccess] = useState(false);
+  const [showAiForm, setShowAiForm] = useState(false);
+  const [freelancerSkills, setFreelancerSkills] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   if (submitted) {
     return (
@@ -51,6 +64,44 @@ export function SubmitProposalSection({
       </div>
     );
   }
+
+  const handleGenerateAI = async () => {
+    if (!freelancerSkills.trim()) {
+      setError("Please describe your skills and experience first.");
+      return;
+    }
+
+    setAiLoading(true);
+    setError("");
+    setAiSuccess(false);
+
+    try {
+      const result = await generateProposal({
+        projectTitle,
+        projectDescription,
+        projectSkills,
+        projectBudget,
+        freelancerSkillsAndExperience: freelancerSkills,
+      });
+
+      if (result.error) {
+        setError(result.error);
+      } else if (result.proposal) {
+        // Populate the textarea with the AI-generated proposal
+        if (textareaRef.current) {
+          textareaRef.current.value = result.proposal;
+          // Trigger a visual highlight to show the textarea was populated
+          setAiSuccess(true);
+          setShowAiForm(false);
+          setTimeout(() => setAiSuccess(false), 3000);
+        }
+      }
+    } catch {
+      setError("Failed to generate proposal. Please try again.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,6 +176,75 @@ export function SubmitProposalSection({
                 </div>
               )}
 
+              {/* AI Success Banner */}
+              {aiSuccess && (
+                <div className="flex items-start gap-3 rounded-xl bg-violet-500/10 border border-violet-500/20 px-4 py-3 text-sm text-violet-300 animate-in fade-in duration-300">
+                  <Sparkles className="w-4 h-4 shrink-0 mt-0.5" />
+                  AI proposal generated! Review and edit it before submitting.
+                </div>
+              )}
+
+              {/* AI Generate Button / Form */}
+              {!showAiForm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAiForm(true)}
+                  disabled={loading}
+                  className="group relative w-full overflow-hidden rounded-xl border border-violet-500/30 bg-gradient-to-r from-violet-500/10 via-indigo-500/10 to-purple-500/10 px-4 py-3.5 text-sm font-medium text-violet-300 transition-all duration-300 hover:border-violet-500/50 hover:from-violet-500/20 hover:via-indigo-500/20 hover:to-purple-500/20 hover:text-violet-200 hover:shadow-lg hover:shadow-violet-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {/* Animated gradient background */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-violet-600/0 via-violet-600/5 to-violet-600/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                  <div className="relative flex items-center justify-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Generate Proposal with AI</span>
+                  </div>
+                </button>
+              ) : (
+                <div className="space-y-3 rounded-xl border border-violet-500/30 bg-violet-500/5 p-4 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-violet-300 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      Briefly describe your relevant skills and experience
+                    </label>
+                    <textarea
+                      value={freelancerSkills}
+                      onChange={(e) => setFreelancerSkills(e.target.value)}
+                      rows={3}
+                      placeholder="e.g. 3 years experience in React and Node.js or Math tutor, strong in statistics, no coding background..."
+                      className="w-full rounded-xl bg-white/[0.05] border border-white/10 px-4 py-3 text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/40 transition-all duration-300 resize-none text-sm"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleGenerateAI}
+                      disabled={aiLoading || !freelancerSkills.trim()}
+                      className="flex-1 rounded-xl bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {aiLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Generating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          <span>Generate</span>
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowAiForm(false)}
+                      disabled={aiLoading}
+                      className="px-4 py-2 rounded-xl border border-white/10 hover:bg-white/5 text-gray-300 text-sm font-medium transition-colors disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Cover Letter */}
               <div className="space-y-2">
                 <label
@@ -136,12 +256,17 @@ export function SubmitProposalSection({
                   <span className="text-red-400">*</span>
                 </label>
                 <textarea
+                  ref={textareaRef}
                   id="coverLetter"
                   name="coverLetter"
                   required
-                  rows={4}
+                  rows={6}
                   placeholder="Introduce yourself, explain why you're a great fit for this project, and outline your approach..."
-                  className="w-full rounded-xl bg-white/[0.05] border border-white/10 px-4 py-3 text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/40 transition-all duration-200 resize-none leading-relaxed text-sm"
+                  className={`w-full rounded-xl bg-white/[0.05] border px-4 py-3 text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/40 transition-all duration-300 resize-none leading-relaxed text-sm ${
+                    aiSuccess
+                      ? "border-violet-500/40 ring-2 ring-violet-500/20 bg-violet-500/5"
+                      : "border-white/10"
+                  }`}
                 />
               </div>
 
