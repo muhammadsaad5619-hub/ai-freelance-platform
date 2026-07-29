@@ -13,6 +13,7 @@ import {
   Plus,
   Search,
   CheckCircle,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -88,6 +89,7 @@ export default async function DashboardPage() {
         { label: "Find Work", href: "/find-work", icon: Search, desc: "Browse available projects", color: "from-violet-500 to-indigo-600" },
         { label: "My Proposals", href: "/my-proposals", icon: FileText, desc: "Track your proposals", color: "from-emerald-500 to-teal-600" },
         { label: "Messages", href: "/messages", icon: MessageSquare, desc: "View conversations", color: "from-blue-500 to-cyan-600" },
+        { label: "Resume Analyzer", href: "/resume-analyzer", icon: Sparkles, desc: "AI resume review", color: "from-pink-500 to-rose-600" },
       ]
     : [
         { label: "Post a Project", href: "/projects", icon: Plus, desc: "Hire top freelancers", color: "from-violet-500 to-indigo-600" },
