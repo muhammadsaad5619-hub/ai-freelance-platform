@@ -49,19 +49,39 @@ export default async function DashboardPage() {
   const RoleIcon = isFreelancer ? Briefcase : User;
 
   // Stats differ by role
-  const stats = isFreelancer
-    ? [
-        { title: "Active Proposals", value: "0", sub: "No proposals sent yet", icon: FileText, color: "text-violet-400" },
-        { title: "Jobs Won", value: "0", sub: "No completed jobs yet", icon: CheckCircle, color: "text-emerald-400" },
-        { title: "Messages", value: "0", sub: "No messages yet", icon: MessageSquare, color: "text-blue-400" },
-        { title: "Profile Views", value: "0", sub: "Views this week", icon: TrendingUp, color: "text-amber-400" },
-      ]
-    : [
-        { title: "Active Projects", value: "0", sub: "No projects yet", icon: Briefcase, color: "text-violet-400" },
-        { title: "Total Proposals", value: "0", sub: "No proposals received", icon: FileText, color: "text-emerald-400" },
-        { title: "Messages", value: "0", sub: "No messages yet", icon: MessageSquare, color: "text-blue-400" },
-        { title: "Hired Freelancers", value: "0", sub: "No hires yet", icon: Star, color: "text-amber-400" },
+  let stats = [];
+
+  if (dbUser) {
+    if (isFreelancer) {
+      const [totalProposals, pendingProposals, acceptedProposals] = await Promise.all([
+        prisma.proposal.count({ where: { freelancerId: dbUser.id } }),
+        prisma.proposal.count({ where: { freelancerId: dbUser.id, status: "PENDING" } }),
+        prisma.proposal.count({ where: { freelancerId: dbUser.id, status: "ACCEPTED" } }),
+      ]);
+      const successRate = totalProposals > 0 ? Math.round((acceptedProposals / totalProposals) * 100) : 0;
+
+      stats = [
+        { title: "Total Proposals", value: totalProposals.toString(), sub: "Submitted proposals", icon: FileText, color: "text-violet-400" },
+        { title: "Pending Proposals", value: pendingProposals.toString(), sub: "Awaiting response", icon: TrendingUp, color: "text-amber-400" },
+        { title: "Accepted Proposals", value: acceptedProposals.toString(), sub: "Jobs won", icon: CheckCircle, color: "text-emerald-400" },
+        { title: "Success Rate", value: `${successRate}%`, sub: "Accepted / Total", icon: Star, color: "text-blue-400" },
       ];
+    } else if (isClient) {
+      const [totalProjects, openProjects, inProgressProjects, totalProposalsReceived] = await Promise.all([
+        prisma.project.count({ where: { clientId: dbUser.id } }),
+        prisma.project.count({ where: { clientId: dbUser.id, status: "OPEN" } }),
+        prisma.project.count({ where: { clientId: dbUser.id, status: "IN_PROGRESS" } }),
+        prisma.proposal.count({ where: { project: { clientId: dbUser.id } } }),
+      ]);
+
+      stats = [
+        { title: "Total Projects", value: totalProjects.toString(), sub: "Projects posted", icon: Briefcase, color: "text-violet-400" },
+        { title: "Open Projects", value: openProjects.toString(), sub: "Accepting proposals", icon: Search, color: "text-amber-400" },
+        { title: "In Progress", value: inProgressProjects.toString(), sub: "Active contracts", icon: CheckCircle, color: "text-blue-400" },
+        { title: "Proposals Received", value: totalProposalsReceived.toString(), sub: "Across all projects", icon: FileText, color: "text-emerald-400" },
+      ];
+    }
+  }
 
   const quickActions = isFreelancer
     ? [
