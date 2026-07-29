@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatsSection } from "@/components/ui/stats-section";
 import Image from "next/image";
+import { SignUpButton } from "@clerk/nextjs";
 
 const features = [
   {
@@ -174,10 +175,12 @@ export default function Home() {
                 AI to transform how they work together.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button size="lg" className="group">
-                  Create Free Account
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
+                <SignUpButton mode="modal" forceRedirectUrl="/dashboard">
+                  <Button size="lg" className="group">
+                    Create Free Account
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </SignUpButton>
                 <Button variant="outline" size="lg">
                   Learn More
                 </Button>
