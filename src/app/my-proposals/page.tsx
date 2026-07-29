@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { FileText, Calendar, DollarSign, ArrowRight, Clock, CheckCircle, XCircle } from "lucide-react";
@@ -132,7 +132,7 @@ export default async function MyProposalsPage() {
             </div>
             <CardTitle className="text-xl mb-2 text-white">No proposals yet</CardTitle>
             <p className="text-gray-400 mb-6 max-w-sm">
-              You haven't submitted any proposals yet. Browse available projects to start earning!
+              You haven&apos;t submitted any proposals yet. Browse available projects to start earning!
             </p>
             <Link href="/find-work">
               <div className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-emerald-500 text-white font-medium hover:bg-emerald-600 transition-colors">

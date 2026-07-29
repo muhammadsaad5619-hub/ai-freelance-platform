@@ -50,7 +50,7 @@ export default async function DashboardPage() {
   const RoleIcon = isFreelancer ? Briefcase : User;
 
   // Stats differ by role
-  let stats = [];
+  let stats: Array<{ title: string; value: string; sub: string; icon: React.ElementType; color: string }> = [];
 
   if (dbUser) {
     if (isFreelancer) {

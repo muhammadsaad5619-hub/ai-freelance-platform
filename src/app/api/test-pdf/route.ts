@@ -13,8 +13,9 @@ export async function POST(req: Request) {
     const parsedText = Array.isArray(text) ? text.join("\n") : text;
 
     return NextResponse.json({ success: true, text: parsedText });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("PDF parse error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
